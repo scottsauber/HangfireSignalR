@@ -1,0 +1,38 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="mb-5">
+    <input id="store-code" class="form-control" placeholder="Store Code"/>
+</div>
+<button id="start-button" class="btn btn-primary mb-5">Start</button>
+<ul id="logs">
+</ul>
+
+@section Scripts {
+    <script>
+        const connection = new signalR.HubConnectionBuilder().withUrl("/jobs").build();
+        
+        connection.on("reportProgress", message => {
+            const li = document.createElement("li");
+            li.textContent = message;
+            document.getElementById("logs").appendChild(li);
+        });
+        
+        connection.start().then(() => {
+            console.info("connection started!");
+        }).catch(error => {
+            return console.error(error.toString());
+        }); 
+        
+        document.getElementById("start-button").addEventListener("click", event => {
+            const storeCode = document.getElementById("store-code").value; 
+            connection.invoke("StartJob", storeCode).catch(error => {
+                console.error(error.toString());
+            });
+            event.preventDefault();
+        });
+    </script>
+}
